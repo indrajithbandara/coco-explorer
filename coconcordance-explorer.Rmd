@@ -1,0 +1,76 @@
+---
+title: "Co-concordance Explorer"
+output: 
+  flexdashboard::flex_dashboard:
+  orientation: columns
+vertical_layout: fill
+runtime: shiny
+---
+  
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(here)
+
+ggplot2::theme_set(hrbrthemes::theme_ipsum())
+
+load(here("data/results.rda"))
+```
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+  
+```{r}
+selectInput("left_corpus", label = h3("Left corpus"), 
+            choices = list("Jane Austen" = "austen", "Thomas Hardy" = "hardy", "D. H. Lawrence" = "lawrence"), 
+            selected = "austen")
+```
+
+```{r}
+selectInput("right_corpus", label = h3("Right corpus"), 
+            choices = list("Jane Austen" = "austen", "Thomas Hardy" = "hardy", "D. H. Lawrence" = "lawrence"), 
+            selected = "hardy")
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+  
+### CoCo Plot
+  
+```{r}
+library(tidyverse)
+
+results_ <- reactive({ results[input$left_corpus, input$right_corpus][[1]][[1]] })
+
+ordering <- reactive({results_() %>%
+    mutate(z = paste(x, y)) %>%
+    arrange(desc(x), desc(effect_size)) %>%
+    select(z) %>%
+    `$`(z)})
+
+f <- function(v) paste(format(v[1], justify = "right", width = 10), format(v[2], justify = "left", width = 10))
+
+V <- reactive({strsplit(ordering(), split = " ")})
+
+labels <- reactive({map_chr(V(), f)})
+```
+
+```{r, fig.height=10, fig.width=10}
+renderPlot({results_() %>%
+    ggplot(aes(paste(x, y), effect_size)) +
+    geom_point(colour = "skyblue4") +
+    geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), colour = "seashell4") +
+    scale_x_discrete(limits = rev(ordering()), labels = rev(labels())) +
+    coord_flip() +
+    labs(
+      x = "",
+      y = "Effect size"
+    ) +
+    theme(
+      panel.border = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.y  = element_text(family = "monospace")
+    ) +
+    geom_hline(yintercept = 0, colour = "grey", linetype = 2, size = 0.5)})
+```
+
