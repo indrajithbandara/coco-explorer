@@ -20,15 +20,27 @@ Inputs {.sidebar}
 -----------------------------------------------------------------------
   
 ```{r}
-selectInput("left_corpus", label = h3("Left corpus"), 
-            choices = list("Jane Austen" = "austen", "Thomas Hardy" = "hardy", "D. H. Lawrence" = "lawrence"), 
-            selected = "austen")
+selectInput(
+  inputId = "left_corpus",
+  label = h3("Left corpus"), 
+  choices = list(
+    "Jane Austen" = "austen",
+    "Thomas Hardy" = "hardy",
+    "D. H. Lawrence" = "lawrence"
+  ), 
+  selected = "austen")
 ```
 
 ```{r}
-selectInput("right_corpus", label = h3("Right corpus"), 
-            choices = list("Jane Austen" = "austen", "Thomas Hardy" = "hardy", "D. H. Lawrence" = "lawrence"), 
-            selected = "hardy")
+selectInput(
+  inputId = "right_corpus",
+  label = h3("Right corpus"), 
+  choices = list(
+    "Jane Austen" = "austen",
+    "Thomas Hardy" = "hardy",
+    "D. H. Lawrence" = "lawrence"
+  ), 
+  selected = "hardy")
 ```
 
 Column {data-width=650}
