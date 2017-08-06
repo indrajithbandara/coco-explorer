@@ -6,15 +6,11 @@ library(thomashardyr)
 #devtools::install_github("mhenderson/dhlawrencer")
 library(dhlawrencer)
 
-hb <- hardy_books()
-lb <- lawrence_books()
-ja <- austen_books()
-
 library(stringi)
 
-hardy_words <- unlist(stri_extract_all_words(stri_trans_tolower(hb$text)))
-lawrence_words <- unlist(stri_extract_all_words(stri_trans_tolower(lb$text)))
-austen_words <- unlist(stri_extract_all_words(stri_trans_tolower(ja$text)))
+hardy_words <- unlist(stri_extract_all_words(stri_trans_tolower(hardy_books()$text)))
+lawrence_words <- unlist(stri_extract_all_words(stri_trans_tolower(lawrence_books()$text)))
+austen_words <- unlist(stri_extract_all_words(stri_trans_tolower(austen_books()$text)))
 
 library(CorporaCoCo)
 
