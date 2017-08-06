@@ -39,27 +39,19 @@ Column {data-width=650}
 ```{r}
 library(tidyverse)
 
-results_ <- reactive({ results[input$left_corpus, input$right_corpus][[1]][[1]] })
-
-ordering <- reactive({results_() %>%
-    mutate(z = paste(x, y)) %>%
-    arrange(desc(x), desc(effect_size)) %>%
-    select(z) %>%
-    `$`(z)})
-
-f <- function(v) paste(format(v[1], justify = "right", width = 10), format(v[2], justify = "left", width = 10))
-
-V <- reactive({strsplit(ordering(), split = " ")})
-
-labels <- reactive({map_chr(V(), f)})
+results_ <- reactive({
+  results %>%
+    filter(left == input$left_corpus) %>%
+    filter(right == input$right_corpus)
+})
 ```
 
 ```{r, fig.height=10, fig.width=10}
-renderPlot({results_() %>%
+renderPlot({
+  results_() %>%
     ggplot(aes(paste(x, y), effect_size)) +
     geom_point(colour = "skyblue4") +
     geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), colour = "seashell4") +
-    scale_x_discrete(limits = rev(ordering()), labels = rev(labels())) +
     coord_flip() +
     labs(
       x = "",
