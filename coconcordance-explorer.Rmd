@@ -54,14 +54,16 @@ library(tidyverse)
 results_ <- reactive({
   results %>%
     filter(left == input$left_corpus) %>%
-    filter(right == input$right_corpus)
+    filter(right == input$right_corpus) %>%
+    arrange(x, effect_size) %>%
+    mutate(n = row_number())
 })
 ```
 
 ```{r, fig.height=10, fig.width=10}
 renderPlot({
   results_() %>%
-    ggplot(aes(paste(x, y), effect_size)) +
+    ggplot(aes(reorder(paste(x, y), n), effect_size)) +
     geom_point(colour = "skyblue4") +
     geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), colour = "seashell4") +
     coord_flip() +
