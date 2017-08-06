@@ -1,38 +1,49 @@
-library(CorporaCoCo)
-library(here)
-library(janeaustenr)
-library(stringi)
+library(tidyverse)
 
+library(janeaustenr)
 #devtools::install_github("mhenderson/thomashardyr")
 library(thomashardyr)
 #devtools::install_github("mhenderson/dhlawrencer")
 library(dhlawrencer)
 
-nodes <- c('back', 'eye', 'eyes', 'forehead', 'hand', 'hands', 'head', 'shoulder')
-
 hb <- hardy_books()
 lb <- lawrence_books()
 ja <- austen_books()
+
+library(stringi)
 
 hardy_words <- unlist(stri_extract_all_words(stri_trans_tolower(hb$text)))
 lawrence_words <- unlist(stri_extract_all_words(stri_trans_tolower(lb$text)))
 austen_words <- unlist(stri_extract_all_words(stri_trans_tolower(ja$text)))
 
-library(tidyverse)
+library(CorporaCoCo)
 
-corpora <- tibble(words = list(hardy_words, lawrence_words, austen_words))
+nodes <- c('back', 'eye', 'eyes', 'forehead', 'hand', 'hands', 'head', 'shoulder')
 
 f <- compose(as.tibble, partial(surface_coco, span = '5LR', nodes = nodes, fdr = 0.01))
 
-results_hardy <- purrr::map(corpora$words, partial(f, b = hardy_words))
-names(results_hardy) <- c("hardy", "lawrence", "austen")
+left_corpora <- c("austen", "austen", "hardy", "hardy", "lawrence", "lawrence")
+right_corpora <- c("hardy", "lawrence", "lawrence", "austen", "hardy", "austen")
 
-results_lawrence <- purrr::map(corpora$words, partial(f, b = lawrence_words))
-names(results_lawrence) <- c("hardy", "lawrence", "austen")
+tibble(
+  left = left_corpora,
+  right = right_corpora,
+  results = list(
+    f(austen_words, hardy_words),
+    f(austen_words, lawrence_words),
+    f(hardy_words, austen_words),
+    f(hardy_words, lawrence_words),
+    f(lawrence_words, austen_words),
+    f(lawrence_words, hardy_words)
+  )) %>%
+  unnest() %>%
+  mutate(
+    label = map2_chr(
+      x,
+      y,
+      ~ paste(format(.x, justify = "right", width = 10), format(.y, justify = "left", width = 10))
+    )
+  ) ->
+  results
 
-results_austen <- purrr::map(corpora$words, partial(f, b = austen_words))
-names(results_austen) <- c("hardy", "lawrence", "austen")
-
-results <- tibble(hardy = results_hardy, lawrence = results_lawrence, austen = results_austen)
-
-save(results, file = here("data", "results.rda"))
+save(results, file = here("data/results.rda"))
