@@ -1,2 +1,2 @@
-# coconcordance-explorer
-Explore co-concordances in corpora.
+# coco-explorer
+Explore co-occurrences in corpora.
