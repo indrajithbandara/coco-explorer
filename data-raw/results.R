@@ -1,3 +1,4 @@
+library(here)
 library(tidyverse)
 
 library(janeaustenr)
@@ -8,9 +9,18 @@ library(dhlawrencer)
 
 library(stringi)
 
-hardy_words <- unlist(stri_extract_all_words(stri_trans_tolower(hardy_books()$text)))
-lawrence_words <- unlist(stri_extract_all_words(stri_trans_tolower(lawrence_books()$text)))
-austen_words <- unlist(stri_extract_all_words(stri_trans_tolower(austen_books()$text)))
+library(CorporaCorpus)
+
+raw_texts <- list(
+  "hardy" = hardy_books()$text,
+  "lawrence" = lawrence_books()$text,
+  "austen" = austen_books()$text,
+  "DNov" = unlist(lapply(corpus_filepaths('DNov'), readLines)),
+  "19C" = unlist(lapply(corpus_filepaths('19C'), readLines))
+) 
+
+works <- raw_texts %>%
+  map(~unlist(stri_extract_all_words(stri_trans_tolower(.))))
 
 library(CorporaCoCo)
 
@@ -18,21 +28,9 @@ nodes <- c('back', 'eye', 'eyes', 'forehead', 'hand', 'hands', 'head', 'shoulder
 
 f <- compose(as.tibble, partial(surface_coco, span = '5LR', nodes = nodes, fdr = 0.01))
 
-left_corpora <- c("austen", "austen", "hardy", "hardy", "lawrence", "lawrence")
-right_corpora <- c("hardy", "lawrence", "lawrence", "austen", "hardy", "austen")
-
-tibble(
-  left = left_corpora,
-  right = right_corpora,
-  results = list(
-    f(austen_words, hardy_words),
-    f(austen_words, lawrence_words),
-    f(hardy_words, austen_words),
-    f(hardy_words, lawrence_words),
-    f(lawrence_words, austen_words),
-    f(lawrence_words, hardy_words)
-  )) %>%
-  unnest() %>%
+as.tibble(expand.grid(left = names(works), right = names(works))) %>%
+  mutate(results = map2(left, right, ~ f(works[[.x]], works[[.y]]))) %>%
+  unnest()  %>%
   mutate(
     label = map2_chr(
       x,
