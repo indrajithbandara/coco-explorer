@@ -20,6 +20,7 @@ shinyServer(function(input, output) {
     results %>%
       filter(left == input$left_corpus) %>%
       filter(right == input$right_corpus) %>%
+      filter(x %in% unlist(strsplit(input$nodes, split = " "))) %>%
       arrange(x, effect_size) %>%
       mutate(n = row_number())
   })

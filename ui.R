@@ -43,12 +43,10 @@ shinyUI(fluidPage(
         choices = corpora, 
         selected = right_default
       ),
-      radioButtons(
+      textInput(
         inputId = "nodes",
         label = h3("Nodes"),
-        choices = list(
-          "Body parts (back, eye, eyes, forehead, hand, hands, head, shoulder)" = c('back', 'eye', 'eyes', 'forehead', 'hand', 'hands', 'head', 'shoulder')
-        )
+        value = "back eye eyes forehead hand hands head shoulder"
       ),
       sliderInput(
         inputId = "span",
@@ -69,7 +67,10 @@ shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-       plotlyOutput("coco_plot")
+       plotlyOutput(
+         outputId = "coco_plot",
+         height = "800px"
+       )
     )
   )
 ))
