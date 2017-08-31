@@ -1,25 +1,23 @@
-#
-# This is the server logic of a Shiny web application. You can run the 
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
+library(dplyr)
+library(ggplot2)
 library(here)
 library(plotly)
 library(shiny)
-library(tidyverse)
 
-load(here("data/results.rda"))
+src_sqlite(here("data", "results.sqlite3")) %>%
+  tbl("results") -> results
 
-# Define server logic required to draw a histogram
+source(here("R", "to_span_string.R"))
+
 shinyServer(function(input, output) {
    
   results_ <- reactive({
     results %>%
       filter(left == input$left_corpus) %>%
       filter(right == input$right_corpus) %>%
+      filter(fdr %in% input$fdr) %>%
+      collect() %>%
+      filter(span == to_span_string(abs(input$span))) %>%
       filter(x %in% unlist(strsplit(input$nodes, split = " "))) %>%
       arrange(x, effect_size) %>%
       mutate(n = row_number())
@@ -29,7 +27,7 @@ shinyServer(function(input, output) {
     results_() %>%
       ggplot(aes(reorder(paste(x, y), n), effect_size)) +
       geom_point(colour = "skyblue4") +
-      geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), colour = "seashell4") +
+      geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), colour = "skyblue4") +
       coord_flip() +
       labs(
         x = "",
