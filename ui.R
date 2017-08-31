@@ -1,12 +1,4 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
-
+library(plotly)
 library(shiny)
 
 ggplot2::theme_set(hrbrthemes::theme_ipsum())
@@ -20,17 +12,15 @@ corpora <- list(
 )
 
 left_default <- "austen"
-right_default <- "19C"
+right_default <- "hardy"
 
-# Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
-  # Application title
   titlePanel("Corpus Co-occurrence Explorer"),
   
-  # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
+      width = 3,
       selectInput(
         inputId = "left_corpus",
         label = h3("Left corpus"), 
@@ -51,8 +41,8 @@ shinyUI(fluidPage(
       sliderInput(
         inputId = "span",
         label = h3("Span"),
-        min = -10, 
-        max = 10,
+        min = -5, 
+        max = 5,
         value = c(-5, 5)
       ),
       numericInput(
@@ -61,12 +51,12 @@ shinyUI(fluidPage(
         min = 0.01,
         max = 1,
         step = 0.01,
-        value = 0.01
+        value = 0.02
       )
     ),
     
-    # Show a plot of the generated distribution
     mainPanel(
+      width = 9,
        plotlyOutput(
          outputId = "coco_plot",
          height = "800px"
