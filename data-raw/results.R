@@ -1,36 +1,15 @@
 library(here)
 library(tidyverse)
 
-library(janeaustenr)
-#devtools::install_github("mhenderson/thomashardyr")
-library(thomashardyr)
-#devtools::install_github("mhenderson/dhlawrencer")
-library(dhlawrencer)
+load(here("data", "arguments.rda"))
+load(here("data", "works.rda"))
 
-library(stringi)
+source(here("R", "coco_tibble.R"))
 
-library(CorporaCorpus)
-
-raw_texts <- list(
-  "hardy" = hardy_books()$text,
-  "lawrence" = lawrence_books()$text,
-  "austen" = austen_books()$text,
-  "DNov" = unlist(lapply(corpus_filepaths('DNov'), readLines)),
-  "19C" = unlist(lapply(corpus_filepaths('19C'), readLines))
-) 
-
-works <- raw_texts %>%
-  map(~unlist(stri_extract_all_words(stri_trans_tolower(.))))
-
-library(CorporaCoCo)
-
-nodes <- c('back', 'eye', 'eyes', 'forehead', 'hand', 'hands', 'head', 'shoulder')
-
-f <- compose(as.tibble, partial(surface_coco, span = '5LR', nodes = nodes, fdr = 0.01))
-
-as.tibble(expand.grid(left = names(works), right = names(works))) %>%
-  mutate(results = map2(left, right, ~ f(works[[.x]], works[[.y]]))) %>%
-  unnest()  %>%
+arguments %>%
+#  slice(33:40) %>%
+  mutate(results = pmap(., compose(as.tibble, partial(coco_tibble, works = works)))) %>%
+  unnest() %>%
   mutate(
     label = map2_chr(
       x,
@@ -40,4 +19,5 @@ as.tibble(expand.grid(left = names(works), right = names(works))) %>%
   ) ->
   results
 
-save(results, file = here("data/results.rda"))
+src_sqlite(here("data", "results.sqlite3"), create = TRUE) %>%
+  copy_to(results, temporary = FALSE, overwrite = TRUE)
