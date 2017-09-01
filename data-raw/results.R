@@ -7,7 +7,7 @@ load(here("data", "works.rda"))
 source(here("R", "coco_tibble.R"))
 
 arguments %>%
-#  slice(33:40) %>%
+  slice(33:40) %>%
   mutate(results = pmap(., compose(as.tibble, partial(coco_tibble, works = works)))) %>%
   unnest() %>%
   mutate(
